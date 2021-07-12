@@ -46,6 +46,27 @@ typedef struct ball_t {
     gs_vec2 velocity;
 } ball_t;
 
+/*======
+// AABB
+======*/
+
+typedef struct aabb_t {
+    gs_vec2 min;
+    gs_vec2 max;
+} aabb_t;
+
+bool aabb_vs_aabb(const aabb_t* a, const aabb_t* b)
+{
+    if (a->max.x > b->min.x && 
+        a->max.y > b->min.y && 
+        b->max.x > a->min.x && 
+        b->max.y > a->min.y)
+    {
+        return true;
+    }
+    return false;
+}
+
 /*===========
 // Game Data
 ===========*/
@@ -120,17 +141,17 @@ void app_shutdown()
 {
 }
 
-gs_aabb_t paddle_aabb(paddle_t paddle)
+aabb_t paddle_aabb(paddle_t paddle)
 {
-    gs_aabb_t aabb = {0};
+    aabb_t aabb = {0};
     aabb.min = paddle.position;
     aabb.max = gs_vec2_add(aabb.min, paddle_dims());
     return aabb;
 }
 
-gs_aabb_t ball_aabb(ball_t ball)
+aabb_t ball_aabb(ball_t ball)
 {
-    gs_aabb_t aabb = {0};
+    aabb_t aabb = {0};
     aabb.min = ball.position;
     aabb.max = gs_vec2_add(aabb.min, ball_dims());
     return aabb;
@@ -183,12 +204,12 @@ void update_ball(game_data_t* gd)
     }
 
     // Check for collision against paddles
-    gs_aabb_t laabb = paddle_aabb(gd->paddles[PADDLE_LEFT]);
-    gs_aabb_t raabb = paddle_aabb(gd->paddles[PADDLE_RIGHT]);
-    gs_aabb_t baabb = ball_aabb(gd->ball);
+    aabb_t laabb = paddle_aabb(gd->paddles[PADDLE_LEFT]);
+    aabb_t raabb = paddle_aabb(gd->paddles[PADDLE_RIGHT]);
+    aabb_t baabb = ball_aabb(gd->ball);
     if (
-        gs_aabb_vs_aabb(&laabb, &baabb) ||
-        gs_aabb_vs_aabb(&raabb, &baabb)
+        aabb_vs_aabb(&laabb, &baabb) ||
+        aabb_vs_aabb(&raabb, &baabb)
     )
     {
         gd->ball.velocity.x *= -1.f;
